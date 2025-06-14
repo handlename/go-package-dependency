@@ -1,4 +1,4 @@
-module github.com/handlename/go-depends
+module github.com/handlename/go-package-depends
 
 go 1.24.1
 
