@@ -4,6 +4,9 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGenerateDependencyFileContent(t *testing.T) {
@@ -120,9 +123,7 @@ import (
 			generator := NewGenerator()
 			result := generator.GenerateDependencyFileContent(tt.currentPath, tt.dependencies, tt.layerPaths, tt.moduleName)
 
-			if result != tt.expectedContent {
-				t.Errorf("Expected:\n%s\nGot:\n%s", tt.expectedContent, result)
-			}
+			assert.Equal(t, tt.expectedContent, result)
 		})
 	}
 }
@@ -159,9 +160,7 @@ func TestGetPackageName(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			generator := NewGenerator()
 			result := generator.GetPackageName(tt.path)
-			if result != tt.expected {
-				t.Errorf("Expected %s, got %s", tt.expected, result)
-			}
+			assert.Equal(t, tt.expected, result)
 		})
 	}
 }
@@ -243,18 +242,8 @@ func TestGetTransitiveDependencies(t *testing.T) {
 			generator := NewGenerator()
 			result := generator.GetTransitiveDependencies(tt.layerName, tt.config)
 
-			if len(result) != len(tt.expectedDeps) {
-				t.Errorf("Expected %d dependencies, got %d", len(tt.expectedDeps), len(result))
-				t.Errorf("Expected: %v", tt.expectedDeps)
-				t.Errorf("Got: %v", result)
-				return
-			}
-
-			for i, expected := range tt.expectedDeps {
-				if i >= len(result) || result[i] != expected {
-					t.Errorf("Dependency %d: expected %s, got %s", i, expected, result[i])
-				}
-			}
+			assert.Len(t, result, len(tt.expectedDeps))
+			assert.Equal(t, tt.expectedDeps, result)
 		})
 	}
 }
@@ -262,9 +251,7 @@ func TestGetTransitiveDependencies(t *testing.T) {
 func TestGenerateDependencyFiles(t *testing.T) {
 	// Create a temporary directory structure
 	tmpDir, err := os.MkdirTemp("", "go-package-depends-test-*")
-	if err != nil {
-		t.Fatalf("Failed to create temp dir: %v", err)
-	}
+	require.NoError(t, err)
 	defer os.RemoveAll(tmpDir)
 
 	// Create go.mod file
@@ -274,9 +261,7 @@ go 1.21
 `
 	goModPath := filepath.Join(tmpDir, "go.mod")
 	err = os.WriteFile(goModPath, []byte(goModContent), 0644)
-	if err != nil {
-		t.Fatalf("Failed to create go.mod: %v", err)
-	}
+	require.NoError(t, err)
 
 	// Create dependency configuration
 	config := &DependencyConfig{
@@ -294,9 +279,7 @@ go 1.21
 	// Generate dependency files
 	generator := NewGenerator()
 	err = generator.GenerateDependencyFiles(tmpDir, config)
-	if err != nil {
-		t.Fatalf("Failed to generate dependency files: %v", err)
-	}
+	require.NoError(t, err)
 
 	// Check that directories were created
 	expectedDirs := []string{
@@ -307,9 +290,8 @@ go 1.21
 
 	for _, dir := range expectedDirs {
 		dirPath := filepath.Join(tmpDir, dir)
-		if _, err := os.Stat(dirPath); os.IsNotExist(err) {
-			t.Errorf("Directory %s was not created", dirPath)
-		}
+		_, err := os.Stat(dirPath)
+		assert.NoError(t, err, "Directory %s should exist", dirPath)
 	}
 
 	// Check generated files
@@ -352,24 +334,15 @@ import (
 	for _, tc := range testCases {
 		filePath := filepath.Join(tmpDir, tc.path)
 		content, err := os.ReadFile(filePath)
-		if err != nil {
-			t.Errorf("Failed to read file %s: %v", filePath, err)
-			continue
-		}
-
-		if string(content) != tc.expectedContent {
-			t.Errorf("File %s content mismatch.\nExpected:\n%s\nGot:\n%s",
-				tc.path, tc.expectedContent, string(content))
-		}
+		require.NoError(t, err, "Should be able to read file %s", filePath)
+		assert.Equal(t, tc.expectedContent, string(content), "File %s content should match", tc.path)
 	}
 }
 
 func TestGenerateDependencyFilesNonExistentDir(t *testing.T) {
 	// Create a temporary directory structure
 	tmpDir, err := os.MkdirTemp("", "go-package-depends-test-*")
-	if err != nil {
-		t.Fatalf("Failed to create temp dir: %v", err)
-	}
+	require.NoError(t, err)
 	defer os.RemoveAll(tmpDir)
 
 	// Create go.mod file
@@ -379,9 +352,7 @@ go 1.21
 `
 	goModPath := filepath.Join(tmpDir, "go.mod")
 	err = os.WriteFile(goModPath, []byte(goModContent), 0644)
-	if err != nil {
-		t.Fatalf("Failed to create go.mod: %v", err)
-	}
+	require.NoError(t, err)
 
 	config := &DependencyConfig{
 		Layers: []Layer{
@@ -392,19 +363,15 @@ go 1.21
 
 	generator := NewGenerator()
 	err = generator.GenerateDependencyFiles(tmpDir, config)
-	if err != nil {
-		t.Fatalf("Failed to generate dependency files: %v", err)
-	}
+	require.NoError(t, err)
 
 	// Check that the nested directory was created
 	nestedDir := filepath.Join(tmpDir, "new/nested/path")
-	if _, err := os.Stat(nestedDir); os.IsNotExist(err) {
-		t.Errorf("Nested directory %s was not created", nestedDir)
-	}
+	_, err = os.Stat(nestedDir)
+	assert.NoError(t, err, "Nested directory should be created")
 
 	// Check that the dependency file was created
 	depFile := filepath.Join(nestedDir, "dependency.gen.go")
-	if _, err := os.Stat(depFile); os.IsNotExist(err) {
-		t.Errorf("Dependency file %s was not created", depFile)
-	}
+	_, err = os.Stat(depFile)
+	assert.NoError(t, err, "Dependency file should be created")
 }

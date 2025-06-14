@@ -3,6 +3,9 @@ package main
 import (
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParseDependencyContent(t *testing.T) {
@@ -102,55 +105,34 @@ func TestParseDependencyContent(t *testing.T) {
 			config, err := parser.ParseDependencyContent(tt.content)
 
 			if tt.expectError {
-				if err == nil {
-					t.Errorf("Expected error but got none")
-				}
+				assert.Error(t, err)
 				return
 			}
 
-			if err != nil {
-				t.Errorf("Unexpected error: %v", err)
-				return
-			}
+			require.NoError(t, err)
 
 			// Check layers
-			if len(config.Layers) != len(tt.expectedLayers) {
-				t.Errorf("Expected %d layers, got %d", len(tt.expectedLayers), len(config.Layers))
-			}
+			assert.Len(t, config.Layers, len(tt.expectedLayers))
 
 			for i, expected := range tt.expectedLayers {
-				if i >= len(config.Layers) {
-					t.Errorf("Missing layer at index %d", i)
-					continue
-				}
+				require.Less(t, i, len(config.Layers), "Missing layer at index %d", i)
 				actual := config.Layers[i]
-				if actual.Name != expected.Name || actual.Path != expected.Path {
-					t.Errorf("Layer %d: expected {%s, %s}, got {%s, %s}",
-						i, expected.Name, expected.Path, actual.Name, actual.Path)
-				}
+				assert.Equal(t, expected.Name, actual.Name, "Layer %d name mismatch", i)
+				assert.Equal(t, expected.Path, actual.Path, "Layer %d path mismatch", i)
 			}
 
 			// Check dependencies
-			if len(config.Dependencies) != len(tt.expectedDeps) {
-				t.Errorf("Expected %d dependencies, got %d", len(tt.expectedDeps), len(config.Dependencies))
-			}
+			assert.Len(t, config.Dependencies, len(tt.expectedDeps))
 
 			for layer, expectedDeps := range tt.expectedDeps {
 				actualDeps, exists := config.Dependencies[layer]
-				if !exists {
-					t.Errorf("Missing dependencies for layer %s", layer)
-					continue
-				}
+				assert.True(t, exists, "Missing dependencies for layer %s", layer)
 
-				if len(actualDeps) != len(expectedDeps) {
-					t.Errorf("Layer %s: expected %d dependencies, got %d", layer, len(expectedDeps), len(actualDeps))
-					continue
-				}
+				assert.Len(t, actualDeps, len(expectedDeps), "Layer %s dependency count mismatch", layer)
 
 				for i, expectedDep := range expectedDeps {
-					if i >= len(actualDeps) || actualDeps[i] != expectedDep {
-						t.Errorf("Layer %s dependency %d: expected %s, got %s", layer, i, expectedDep, actualDeps[i])
-					}
+					require.Less(t, i, len(actualDeps), "Missing dependency at index %d for layer %s", i, layer)
+					assert.Equal(t, expectedDep, actualDeps[i], "Layer %s dependency %d mismatch", layer, i)
 				}
 			}
 		})
@@ -213,34 +195,21 @@ func TestParseDependencyLine(t *testing.T) {
 			err := parser.ParseDependencyLine(tt.line, config)
 
 			if tt.expectError {
-				if err == nil {
-					t.Errorf("Expected error but got none")
-				}
+				assert.Error(t, err)
 				return
 			}
 
-			if err != nil {
-				t.Errorf("Unexpected error: %v", err)
-				return
-			}
+			require.NoError(t, err)
 
 			// Check that all expected dependencies are present
 			for layer, expectedDeps := range tt.expected {
 				actualDeps, exists := config.Dependencies[layer]
-				if !exists {
-					t.Errorf("Missing dependencies for layer %s", layer)
-					continue
-				}
+				assert.True(t, exists, "Missing dependencies for layer %s", layer)
 
-				if len(actualDeps) != len(expectedDeps) {
-					t.Errorf("Layer %s: expected %d dependencies, got %d", layer, len(expectedDeps), len(actualDeps))
-					continue
-				}
+				assert.Len(t, actualDeps, len(expectedDeps), "Layer %s dependency count mismatch", layer)
 
 				for i, expectedDep := range expectedDeps {
-					if actualDeps[i] != expectedDep {
-						t.Errorf("Layer %s dependency %d: expected %s, got %s", layer, i, expectedDep, actualDeps[i])
-					}
+					assert.Equal(t, expectedDep, actualDeps[i], "Layer %s dependency %d mismatch", layer, i)
 				}
 			}
 		})
@@ -326,31 +295,19 @@ func TestParseLayerLine(t *testing.T) {
 			}
 
 			if tt.expectError {
-				if lastErr == nil {
-					t.Errorf("Expected error but got none")
-				}
+				assert.Error(t, lastErr)
 				return
 			}
 
-			if lastErr != nil {
-				t.Errorf("Unexpected error: %v", lastErr)
-				return
-			}
+			assert.NoError(t, lastErr)
 
-			if len(config.Layers) != len(tt.expectedLayers) {
-				t.Errorf("Expected %d layers, got %d", len(tt.expectedLayers), len(config.Layers))
-			}
+			assert.Len(t, config.Layers, len(tt.expectedLayers))
 
 			for i, expected := range tt.expectedLayers {
-				if i >= len(config.Layers) {
-					t.Errorf("Missing layer at index %d", i)
-					continue
-				}
+				require.Less(t, i, len(config.Layers), "Missing layer at index %d", i)
 				actual := config.Layers[i]
-				if actual.Name != expected.Name || actual.Path != expected.Path {
-					t.Errorf("Layer %d: expected {%s, %s}, got {%s, %s}",
-						i, expected.Name, expected.Path, actual.Name, actual.Path)
-				}
+				assert.Equal(t, expected.Name, actual.Name, "Layer %d name mismatch", i)
+				assert.Equal(t, expected.Path, actual.Path, "Layer %d path mismatch", i)
 			}
 		})
 	}
@@ -427,20 +384,12 @@ go 1.21
 			result, err := parser.GetModuleNameFromContent(tt.content, "test.mod")
 
 			if tt.expectError {
-				if err == nil {
-					t.Errorf("Expected error but got none")
-				}
+				assert.Error(t, err)
 				return
 			}
 
-			if err != nil {
-				t.Errorf("Unexpected error: %v", err)
-				return
-			}
-
-			if result != tt.expected {
-				t.Errorf("Expected %s, got %s", tt.expected, result)
-			}
+			require.NoError(t, err)
+			assert.Equal(t, tt.expected, result)
 		})
 	}
 }
@@ -462,21 +411,16 @@ func TestParseDependencyFile(t *testing.T) {
 `
 
 	tmpFile, err := os.CreateTemp("", "dependency-*.md")
-	if err != nil {
-		t.Fatalf("Failed to create temp file: %v", err)
-	}
+	require.NoError(t, err)
 	defer os.Remove(tmpFile.Name())
 
-	if _, err := tmpFile.WriteString(content); err != nil {
-		t.Fatalf("Failed to write temp file: %v", err)
-	}
+	_, err = tmpFile.WriteString(content)
+	require.NoError(t, err)
 	tmpFile.Close()
 
 	parser := NewParser()
 	config, err := parser.ParseDependencyFile(tmpFile.Name())
-	if err != nil {
-		t.Fatalf("Failed to parse dependency file: %v", err)
-	}
+	require.NoError(t, err)
 
 	// Verify the parsed content
 	expectedLayers := []Layer{
@@ -485,20 +429,13 @@ func TestParseDependencyFile(t *testing.T) {
 		{Name: LayerName("Presentation layer"), Path: LayerPath("presentation/handler")},
 	}
 
-	if len(config.Layers) != len(expectedLayers) {
-		t.Errorf("Expected %d layers, got %d", len(expectedLayers), len(config.Layers))
-	}
+	assert.Len(t, config.Layers, len(expectedLayers))
 
 	for i, expected := range expectedLayers {
-		if i >= len(config.Layers) {
-			t.Errorf("Missing layer at index %d", i)
-			continue
-		}
+		require.Less(t, i, len(config.Layers), "Missing layer at index %d", i)
 		actual := config.Layers[i]
-		if actual.Name != expected.Name || actual.Path != expected.Path {
-			t.Errorf("Layer %d: expected {%s, %s}, got {%s, %s}",
-				i, expected.Name, expected.Path, actual.Name, actual.Path)
-		}
+		assert.Equal(t, expected.Name, actual.Name, "Layer %d name mismatch", i)
+		assert.Equal(t, expected.Path, actual.Path, "Layer %d path mismatch", i)
 	}
 
 	expectedDeps := map[LayerName][]LayerName{
@@ -506,26 +443,16 @@ func TestParseDependencyFile(t *testing.T) {
 		LayerName("Application layer"):  {LayerName("Domain layer")},
 	}
 
-	if len(config.Dependencies) != len(expectedDeps) {
-		t.Errorf("Expected %d dependencies, got %d", len(expectedDeps), len(config.Dependencies))
-	}
+	assert.Len(t, config.Dependencies, len(expectedDeps))
 
 	for layer, expectedDeps := range expectedDeps {
 		actualDeps, exists := config.Dependencies[layer]
-		if !exists {
-			t.Errorf("Missing dependencies for layer %s", layer)
-			continue
-		}
+		assert.True(t, exists, "Missing dependencies for layer %s", layer)
 
-		if len(actualDeps) != len(expectedDeps) {
-			t.Errorf("Layer %s: expected %d dependencies, got %d", layer, len(expectedDeps), len(actualDeps))
-			continue
-		}
+		assert.Len(t, actualDeps, len(expectedDeps), "Layer %s dependency count mismatch", layer)
 
 		for i, expectedDep := range expectedDeps {
-			if actualDeps[i] != expectedDep {
-				t.Errorf("Layer %s dependency %d: expected %s, got %s", layer, i, expectedDep, actualDeps[i])
-			}
+			assert.Equal(t, expectedDep, actualDeps[i], "Layer %s dependency %d mismatch", layer, i)
 		}
 	}
 }
@@ -542,24 +469,17 @@ require (
 `
 
 	tmpFile, err := os.CreateTemp("", "go.mod")
-	if err != nil {
-		t.Fatalf("Failed to create temp file: %v", err)
-	}
+	require.NoError(t, err)
 	defer os.Remove(tmpFile.Name())
 
-	if _, err := tmpFile.WriteString(content); err != nil {
-		t.Fatalf("Failed to write temp file: %v", err)
-	}
+	_, err = tmpFile.WriteString(content)
+	require.NoError(t, err)
 	tmpFile.Close()
 
 	parser := NewParser()
 	result, err := parser.GetModuleName(tmpFile.Name())
-	if err != nil {
-		t.Fatalf("Failed to get module name: %v", err)
-	}
+	require.NoError(t, err)
 
 	expected := ModuleName("github.com/test/project")
-	if result != expected {
-		t.Errorf("Expected %s, got %s", expected, result)
-	}
+	assert.Equal(t, expected, result)
 }
