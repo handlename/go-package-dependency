@@ -14,26 +14,17 @@ A command-line tool that generates Go dependency files based on architectural la
 - 🚀 **Build-time validation**: Dependency violations are caught during compilation
 - 📦 **Module-aware**: Automatically detects Go module names from `go.mod`
 
-## Installation
-
-### From source
-
-```bash
-git clone https://github.com/handlename/go-package-depends.git
-cd go-package-depends
-go build -o go-package-depends main.go
-```
-
-### Using go install
-
-```bash
-go install github.com/handlename/go-package-depends@latest
-```
-
 ## Usage
 
 ```bash
-go-package-depends <path-to-dependency-md>
+go run github.com/handlename/go-package-depends@latest <path-to-dependency-md>
+```
+
+or
+
+```bash
+go get -tool github.com/handlename/go-package-depends@latest
+go tool go-package-depends <path-to-dependency-md>
 ```
 
 ### Examples
@@ -173,45 +164,10 @@ example/
   - usecase/order
 ```
 
-## Troubleshooting
-
-### Common Issues
-
-1. **Directory not found**: Ensure all package paths in `DEPENDENCY.md` exist
-2. **Module not found**: Check that `go.mod` exists in the same directory as `DEPENDENCY.md`
-3. **Parsing errors**: Verify the `DEPENDENCY.md` format follows the specification
-
-
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Development Setup
-
-```bash
-git clone https://github.com/handlename/go-package-depends.git
-cd go-package-depends
-go mod tidy
-go test ./...
-```
-
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-## Acknowledgments
+## Author
 
-- Inspired by Clean Architecture principles by Robert C. Martin
-- Built with Go's powerful dependency management and build system
-- Thanks to the Go community for architectural patterns and best practices
-
-## Related Projects
-
-- [golang-standards/project-layout](https://github.com/golang-standards/project-layout) - Standard Go project layout
-- [ardanlabs/service](https://github.com/ardanlabs/service) - Service architecture example
-- [bxcodec/go-clean-arch](https://github.com/bxcodec/go-clean-arch) - Clean architecture implementation
+@handlename (Hiroaki NAGATA) w/ AI agent
