@@ -218,15 +218,11 @@ func (p *Parser) calculateIndentationLevel(line string) int {
 	}
 
 	// Convert spaces to indentation level
-	// Assuming 2 spaces per indentation level (standard in the example)
-	// Level 0: 2 spaces ("  - ")
-	// Level 1: 4 spaces ("    - ")
-	if spacesBeforeDash >= 4 {
-		return 1
-	} else if spacesBeforeDash >= 2 {
-		return 0
-	}
-	return 0
+	// Level 0: 0-3 spaces
+	// Level 1: 4-7 spaces ("    - ", "      - ")
+	// Level 2: 8-11 spaces ("        - ")
+	// Level n: 4*n to 4*n+3 spaces
+	return spacesBeforeDash / 4
 }
 
 func (p *Parser) GetModuleName(goModPath string) (ModuleName, error) {
