@@ -33,7 +33,6 @@ func (g *Generator) GenerateDependencyFiles(baseDir string, config *DependencyCo
 			if err != nil {
 				return DirectoryCreationError{Path: packageDir, Err: err}
 			}
-			fmt.Printf("Created directory: %s\n", packageDir)
 		}
 
 		// Get dependencies for this package
@@ -54,8 +53,6 @@ func (g *Generator) GenerateDependencyFiles(baseDir string, config *DependencyCo
 		if err := cmd.Run(); err != nil {
 			return FileFormatError{Path: outputPath, Err: err}
 		}
-
-		fmt.Printf("Generated: %s\n", outputPath)
 	}
 
 	return nil

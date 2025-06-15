@@ -145,10 +145,10 @@ func TestGetDependenciesForPackage(t *testing.T) {
 			expectNoDeps:  true,
 		},
 		{
-			name:          "domain valueobject - no dependencies",
+			name:          "domain valueobject - depends on entity",
 			targetPackage: Package{Path: LayerPath("domain/valueobject"), Level: 0},
-			expectedDeps:  []LayerPath{},
-			expectNoDeps:  true,
+			expectedDeps:  []LayerPath{LayerPath("domain/entity")},
+			expectNoDeps:  false,
 		},
 		{
 			name:          "domain service - depends on entity and valueobject",

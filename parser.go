@@ -9,6 +9,11 @@ import (
 	"strings"
 )
 
+var (
+	emptyLayerRegex = regexp.MustCompile(`^(\d+)\.\s*$`)
+	layerRegex      = regexp.MustCompile(`^(\d+)\.\s+(.+)$`)
+)
+
 type Parser struct{}
 
 func NewParser() *Parser {
@@ -104,13 +109,13 @@ func (p *Parser) ParseLayersSection(line string, config *DependencyConfig) error
 	}
 
 	// Check for numbered lines with empty names like "1. "
-	emptyLayerRegex := regexp.MustCompile(`^(\d+)\.\s*$`)
+	// Using package-level emptyLayerRegex constant
 	if emptyLayerRegex.MatchString(trimmed) {
 		return fmt.Errorf("invalid layer name: layer name cannot be empty")
 	}
 
 	// Match numbered layer lines like "1. Domain layer"
-	layerRegex := regexp.MustCompile(`^(\d+)\.\s+(.+)$`)
+	// Using package-level layerRegex constant
 	matches := layerRegex.FindStringSubmatch(trimmed)
 
 	if len(matches) == 3 {
@@ -147,13 +152,13 @@ func (p *Parser) ParsePackagesSection(line string, config *DependencyConfig, cur
 	}
 
 	// Check for numbered lines with empty names like "1. "
-	emptyLayerRegex := regexp.MustCompile(`^(\d+)\.\s*$`)
+	// Using package-level emptyLayerRegex constant
 	if emptyLayerRegex.MatchString(trimmed) {
 		return fmt.Errorf("invalid layer name: layer name cannot be empty")
 	}
 
 	// Match numbered layer lines like "1. Domain layer"
-	layerRegex := regexp.MustCompile(`^(\d+)\.\s+(.+)$`)
+	// Using package-level layerRegex constant
 	matches := layerRegex.FindStringSubmatch(trimmed)
 
 	if len(matches) == 3 {
@@ -217,11 +222,12 @@ func (p *Parser) calculateIndentationLevel(line string) int {
 		}
 	}
 
-	// Convert spaces to indentation level
+	// Convert spaces to indentation level using 4-space standard
+	// This supports arbitrary nesting depth:
 	// Level 0: 0-3 spaces
 	// Level 1: 4-7 spaces ("    - ", "      - ")
 	// Level 2: 8-11 spaces ("        - ")
-	// Level n: 4*n to 4*n+3 spaces
+	// Level n: 4*n to 4*n+3 spaces (supports unlimited depth)
 	return spacesBeforeDash / 4
 }
 

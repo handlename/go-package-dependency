@@ -184,12 +184,21 @@ func (dc *DependencyConfig) GetDependenciesForPackage(targetPackage Package) []L
 		}
 	}
 
+	// Find target package index
+	var targetIndex int
+	for i, pkg := range targetLayer.Packages {
+		if pkg.Path == targetPackage.Path {
+			targetIndex = i
+			break
+		}
+	}
+
 	// Add dependencies from the same layer
-	for _, pkg := range targetLayer.Packages {
+	for i, pkg := range targetLayer.Packages {
 		if pkg.Path != targetPackage.Path {
 			// Can depend on packages at higher levels (lower level number)
 			// or packages at the same level that come before in the hierarchy
-			if pkg.Level < targetPackage.Level {
+			if pkg.Level < targetPackage.Level || (pkg.Level == targetPackage.Level && i < targetIndex) {
 				dependencies = append(dependencies, pkg.Path)
 			}
 		}
