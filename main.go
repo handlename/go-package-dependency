@@ -10,7 +10,7 @@ import (
 
 func main() {
 	var (
-		app                = kingpin.New("go-package-depends", "Generate dependency.gen.go files based on DEPENDENCY.md")
+		app                = kingpin.New("go-package-dependency", "Generate dependency.gen.go files based on DEPENDENCY.md")
 		dependencyFilePath = app.Arg("dependency-file", "Path to the DEPENDENCY.md file").Required().String()
 	)
 
