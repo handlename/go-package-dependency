@@ -40,7 +40,7 @@ package entity
 package service
 
 import (
-	_ "github.com/example/project/domain/entity"
+_ "github.com/example/project/domain/entity"
 )
 `,
 		},
@@ -59,10 +59,10 @@ import (
 package usecase
 
 import (
-	_ "github.com/example/project/app/service"
-	_ "github.com/example/project/domain/entity"
-	_ "github.com/example/project/domain/service"
-	_ "github.com/example/project/domain/valueobject"
+_ "github.com/example/project/app/service"
+_ "github.com/example/project/domain/entity"
+_ "github.com/example/project/domain/service"
+_ "github.com/example/project/domain/valueobject"
 )
 `,
 		},
@@ -78,7 +78,7 @@ import (
 package mysql
 
 import (
-	_ "github.com/example/project/domain/entity"
+_ "github.com/example/project/domain/entity"
 )
 `,
 		},
