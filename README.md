@@ -1,5 +1,9 @@
 # go-package-dependency
 
+> [!IMPORTANT]
+>
+> This tool is experimental and provided as-is. Please use it at your own risk and discretion. The API and behavior may change without notice.
+
 A command-line tool that generates Go dependency files based on architectural layer definitions in Markdown format.
 
 ## Overview
